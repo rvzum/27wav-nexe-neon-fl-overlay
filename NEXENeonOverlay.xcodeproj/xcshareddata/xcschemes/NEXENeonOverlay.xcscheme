@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "NEXE000000000000010003B"
+               BlueprintIdentifier = "NEXE0000000000000100047"
                BuildableName = "NEXENeonOverlay.app"
                BlueprintName = "NEXENeonOverlay"
                ReferencedContainer = "container:NEXENeonOverlay.xcodeproj">
@@ -44,7 +44,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "NEXE000000000000010003B"
+            BlueprintIdentifier = "NEXE0000000000000100047"
             BuildableName = "NEXENeonOverlay.app"
             BlueprintName = "NEXENeonOverlay"
             ReferencedContainer = "container:NEXENeonOverlay.xcodeproj">
@@ -61,7 +61,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "NEXE000000000000010003B"
+            BlueprintIdentifier = "NEXE0000000000000100047"
             BuildableName = "NEXENeonOverlay.app"
             BlueprintName = "NEXENeonOverlay"
             ReferencedContainer = "container:NEXENeonOverlay.xcodeproj">

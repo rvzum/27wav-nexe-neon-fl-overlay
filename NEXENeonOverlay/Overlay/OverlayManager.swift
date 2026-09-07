@@ -5,7 +5,10 @@
 //  The conductor: wires FLStudioDetector + WindowTracker + PermissionManager
 //  + OverlaySettings together and owns the single OverlayWindow instance's
 //  lifecycle. This is the only place that creates/destroys/repositions the
-//  overlay window.
+//  overlay window. It also owns the LIVE EDGE GLOW capture pipeline
+//  (WindowCaptureService + EdgeGlowController), starting/stopping it only
+//  when that effect mode is selected and Screen Recording access is
+//  granted, so OUTLINE ONLY mode costs nothing extra.
 //
 
 import AppKit
@@ -17,10 +20,15 @@ final class OverlayManager: ObservableObject {
     private let detector: FLStudioDetector
     private let permissions: PermissionManager
     private let settings: OverlaySettings
+    private let screenCapturePermission: ScreenCapturePermission
 
     private var window: OverlayWindow?
     private var hostingController: NSHostingController<OverlayView>?
     private var windowTracker: WindowTracker?
+
+    private let captureService = WindowCaptureService()
+    private lazy var edgeGlowController = EdgeGlowController(capture: captureService, settings: settings)
+    private var lastCaptureSize: CGSize?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -28,14 +36,21 @@ final class OverlayManager: ObservableObject {
     /// when the overlay is intentionally hidden during full screen.
     @Published private(set) var isSuspendedForFullScreen: Bool = false
 
-    init(detector: FLStudioDetector, permissions: PermissionManager, settings: OverlaySettings) {
+    init(
+        detector: FLStudioDetector,
+        permissions: PermissionManager,
+        settings: OverlaySettings,
+        screenCapturePermission: ScreenCapturePermission
+    ) {
         self.detector = detector
         self.permissions = permissions
         self.settings = settings
+        self.screenCapturePermission = screenCapturePermission
 
         observeDetector()
         observeSettings()
         observePermissions()
+        observeCaptureConditions()
     }
 
     // MARK: - Observation
@@ -72,6 +87,24 @@ final class OverlayManager: ObservableObject {
             .store(in: &cancellables)
     }
 
+    /// LIVE EDGE GLOW's capture stream only runs while that mode is selected
+    /// and Screen Recording access has been granted; it stays fully off
+    /// otherwise so OUTLINE ONLY mode costs nothing extra.
+    private func observeCaptureConditions() {
+        Publishers.CombineLatest(settings.$effectMode, screenCapturePermission.$isGranted)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] mode, granted in
+                guard let self else { return }
+                if mode == .liveEdgeGlow, granted, let app = self.detector.runningApp {
+                    self.captureService.start(pid: app.processIdentifier)
+                } else {
+                    self.captureService.stop()
+                    self.lastCaptureSize = nil
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     // MARK: - Tracking lifecycle
 
     private func startTracking(pid: pid_t) {
@@ -101,6 +134,8 @@ final class OverlayManager: ObservableObject {
 
     private func stopTracking() {
         windowTracker = nil
+        captureService.stop()
+        lastCaptureSize = nil
         destroyWindow()
     }
 
@@ -115,14 +150,36 @@ final class OverlayManager: ObservableObject {
         } else {
             createWindow(frame: frame.rect)
         }
+
+        updateCaptureIfNeeded(newSize: frame.size)
         refreshVisibility()
+    }
+
+    /// (Re)starts the LIVE EDGE GLOW capture stream when FL Studio's window
+    /// is resized, since a ScreenCaptureKit stream's configuration is fixed
+    /// at creation time. A small tolerance avoids restarting on sub-pixel
+    /// jitter from ordinary window moves.
+    private func updateCaptureIfNeeded(newSize: CGSize) {
+        guard settings.effectMode == .liveEdgeGlow,
+              screenCapturePermission.isGranted,
+              let app = detector.runningApp else { return }
+
+        if let last = lastCaptureSize {
+            if abs(last.width - newSize.width) > 4 || abs(last.height - newSize.height) > 4 {
+                captureService.restart(pid: app.processIdentifier)
+                lastCaptureSize = newSize
+            }
+        } else {
+            captureService.start(pid: app.processIdentifier)
+            lastCaptureSize = newSize
+        }
     }
 
     // MARK: - Window management
 
     private func createWindow(frame: CGRect) {
         let overlayWindow = OverlayWindow(initialFrame: frame)
-        let view = OverlayView(settings: settings)
+        let view = OverlayView(settings: settings, edgeGlow: edgeGlowController)
         let controller = NSHostingController(rootView: view)
         controller.view.frame = CGRect(origin: .zero, size: frame.size)
         overlayWindow.contentView = controller.view

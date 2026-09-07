@@ -20,6 +20,8 @@ final class OverlaySettings: ObservableObject {
         static let animationSpeed = "nexe.animationSpeed"
         static let frameThickness = "nexe.frameThickness"
         static let particlesEnabled = "nexe.particlesEnabled"
+        static let effectMode = "nexe.effectMode"
+        static let edgeSensitivity = "nexe.edgeSensitivity"
     }
 
     /// ENABLE VISUAL OVERLAY toggle.
@@ -42,7 +44,7 @@ final class OverlaySettings: ObservableObject {
         didSet { defaults.set(animationSpeed, forKey: Keys.animationSpeed) }
     }
 
-    /// FRAME THICKNESS slider, 1...10 (points).
+    /// FRAME THICKNESS slider, 1...10 (points). Only used in OUTLINE ONLY mode.
     @Published var frameThickness: Double {
         didSet { defaults.set(frameThickness, forKey: Keys.frameThickness) }
     }
@@ -50,6 +52,18 @@ final class OverlaySettings: ObservableObject {
     /// PARTICLES toggle. Off by default per spec.
     @Published var particlesEnabled: Bool {
         didSet { defaults.set(particlesEnabled, forKey: Keys.particlesEnabled) }
+    }
+
+    /// EFFECT MODE: OUTLINE ONLY (default, no extra permission) vs LIVE EDGE
+    /// GLOW (traces every button/panel/pattern-grid edge FL Studio itself
+    /// draws; needs Screen Recording access — see ScreenCapturePermission).
+    @Published var effectMode: EffectMode {
+        didSet { defaults.set(effectMode.rawValue, forKey: Keys.effectMode) }
+    }
+
+    /// EDGE SENSITIVITY slider, 0...100 — only used in LIVE EDGE GLOW mode.
+    @Published var edgeSensitivity: Double {
+        didSet { defaults.set(edgeSensitivity, forKey: Keys.edgeSensitivity) }
     }
 
     private let defaults: UserDefaults
@@ -62,11 +76,18 @@ final class OverlaySettings: ObservableObject {
         self.animationSpeed = defaults.object(forKey: Keys.animationSpeed) as? Double ?? 40
         self.frameThickness = defaults.object(forKey: Keys.frameThickness) as? Double ?? 2
         self.particlesEnabled = defaults.object(forKey: Keys.particlesEnabled) as? Bool ?? false
+        self.edgeSensitivity = defaults.object(forKey: Keys.edgeSensitivity) as? Double ?? 50
 
         if let savedID = defaults.string(forKey: Keys.themeID) {
             self.theme = Theme.byID(savedID)
         } else {
             self.theme = .nexeVoid
+        }
+
+        if let savedMode = defaults.string(forKey: Keys.effectMode), let mode = EffectMode(rawValue: savedMode) {
+            self.effectMode = mode
+        } else {
+            self.effectMode = .outlineOnly
         }
     }
 

@@ -8,30 +8,46 @@
 //  own `ignoresMouseEvents = true`) that nothing here can ever intercept a
 //  click meant for FL Studio.
 //
+//  Two effect modes (see OverlaySettings.EffectMode):
+//   - OUTLINE ONLY: the original static neon frame traced around FL Studio's
+//     outer window edge (NeonFrameView + ambient glow + corner accents).
+//   - LIVE EDGE GLOW: a live, GPU-processed neon outline of FL Studio's own
+//     on-screen pixels — every button, panel divider, and pattern grid line
+//     FL Studio itself draws — fed by EdgeGlowController.
+//
 
 import SwiftUI
 
 struct OverlayView: View {
     @ObservedObject var settings: OverlaySettings
+    @ObservedObject var edgeGlow: EdgeGlowController
 
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                AmbientLightView(theme: settings.theme, size: proxy.size, settings: settings)
+                switch settings.effectMode {
+                case .outlineOnly:
+                    Group {
+                        AmbientLightView(theme: settings.theme, size: proxy.size, settings: settings)
 
-                NeonFrameView(
-                    theme: settings.theme,
-                    thickness: settings.frameThickness,
-                    intensity: settings.normalizedGlowIntensity,
-                    animationSpeed: settings.normalizedAnimationSpeed,
-                    animationConfig: settings.theme.animation
-                )
+                        NeonFrameView(
+                            theme: settings.theme,
+                            thickness: settings.frameThickness,
+                            intensity: settings.normalizedGlowIntensity,
+                            animationSpeed: settings.normalizedAnimationSpeed,
+                            animationConfig: settings.theme.animation
+                        )
 
-                CornerAccentsView(
-                    theme: settings.theme,
-                    intensity: settings.normalizedGlowIntensity,
-                    animationSpeed: settings.normalizedAnimationSpeed
-                )
+                        CornerAccentsView(
+                            theme: settings.theme,
+                            intensity: settings.normalizedGlowIntensity,
+                            animationSpeed: settings.normalizedAnimationSpeed
+                        )
+                    }
+
+                case .liveEdgeGlow:
+                    EdgeGlowLayerView(image: edgeGlow.processedFrame)
+                }
 
                 if settings.particlesEnabled {
                     ParticleSystemView(theme: settings.theme, intensity: settings.normalizedGlowIntensity)

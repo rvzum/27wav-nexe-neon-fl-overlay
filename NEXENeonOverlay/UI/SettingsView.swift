@@ -20,64 +20,81 @@ struct SettingsView: View {
         ZStack {
             backgroundGradient
 
-            VStack(alignment: .leading, spacing: 22) {
-                header
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    header
 
-                StatusBadge(state: appState.detector.state)
+                    StatusBadge(state: appState.detector.state)
 
-                if !appState.permissions.isTrusted {
-                    accessibilityNotice
+                    if !appState.permissions.isTrusted {
+                        accessibilityNotice
+                    }
+
+                    if appState.overlayManager.isSuspendedForFullScreen {
+                        fullScreenNotice
+                    }
+
+                    Divider().overlay(Color.white.opacity(0.08))
+
+                    ToggleRow(
+                        title: "ENABLE VISUAL OVERLAY",
+                        subtitle: "Draws the neon overlay over FL Studio's window",
+                        isOn: $appState.settings.isOverlayEnabled,
+                        accent: accent
+                    )
+
+                    effectModePicker
+
+                    if appState.settings.effectMode == .liveEdgeGlow && !appState.screenCapturePermission.isGranted {
+                        screenRecordingNotice
+                    }
+
+                    ThemeSelector(selection: $appState.settings.theme)
+
+                    LabeledSlider(
+                        title: "GLOW INTENSITY",
+                        value: $appState.settings.glowIntensity,
+                        range: 0...100,
+                        accent: accent
+                    )
+
+                    LabeledSlider(
+                        title: "ANIMATION SPEED",
+                        value: $appState.settings.animationSpeed,
+                        range: 0...100,
+                        accent: accent
+                    )
+
+                    if appState.settings.effectMode == .outlineOnly {
+                        LabeledSlider(
+                            title: "FRAME THICKNESS",
+                            value: $appState.settings.frameThickness,
+                            range: 1...10,
+                            accent: accent,
+                            valueFormatter: { String(format: "%.1f px", $0) }
+                        )
+                    } else {
+                        LabeledSlider(
+                            title: "EDGE SENSITIVITY",
+                            value: $appState.settings.edgeSensitivity,
+                            range: 0...100,
+                            accent: accent
+                        )
+                    }
+
+                    ToggleRow(
+                        title: "PARTICLES",
+                        subtitle: "Minimal ambient particles (off by default)",
+                        isOn: $appState.settings.particlesEnabled,
+                        accent: accent
+                    )
+
+                    Spacer(minLength: 0)
+
+                    footer
                 }
-
-                if appState.overlayManager.isSuspendedForFullScreen {
-                    fullScreenNotice
-                }
-
-                Divider().overlay(Color.white.opacity(0.08))
-
-                ToggleRow(
-                    title: "ENABLE VISUAL OVERLAY",
-                    subtitle: "Draws the neon frame over FL Studio's window",
-                    isOn: $appState.settings.isOverlayEnabled,
-                    accent: accent
-                )
-
-                ThemeSelector(selection: $appState.settings.theme)
-
-                LabeledSlider(
-                    title: "GLOW INTENSITY",
-                    value: $appState.settings.glowIntensity,
-                    range: 0...100,
-                    accent: accent
-                )
-
-                LabeledSlider(
-                    title: "ANIMATION SPEED",
-                    value: $appState.settings.animationSpeed,
-                    range: 0...100,
-                    accent: accent
-                )
-
-                LabeledSlider(
-                    title: "FRAME THICKNESS",
-                    value: $appState.settings.frameThickness,
-                    range: 1...10,
-                    accent: accent,
-                    valueFormatter: { String(format: "%.1f px", $0) }
-                )
-
-                ToggleRow(
-                    title: "PARTICLES",
-                    subtitle: "Minimal ambient particles (off by default)",
-                    isOn: $appState.settings.particlesEnabled,
-                    accent: accent
-                )
-
-                Spacer(minLength: 0)
-
-                footer
+                .padding(24)
             }
-            .padding(24)
         }
         .frame(width: 360, height: 640)
         .preferredColorScheme(.dark)
@@ -93,6 +110,32 @@ struct SettingsView: View {
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundColor(accent.opacity(0.85))
                 .tracking(3)
+        }
+    }
+
+    private var effectModePicker: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("EFFECT MODE")
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .foregroundColor(.white.opacity(0.5))
+                .tracking(1)
+
+            Picker("", selection: $appState.settings.effectMode) {
+                ForEach(EffectMode.allCases) { mode in
+                    Text(mode.displayName).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            Text(
+                appState.settings.effectMode == .liveEdgeGlow
+                    ? "Traces live neon outlines around every button, panel, and pattern grid line FL Studio draws."
+                    : "A single neon frame traced around FL Studio's outer window edge."
+            )
+            .font(.system(size: 9.5))
+            .foregroundColor(.white.opacity(0.4))
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -113,6 +156,40 @@ struct SettingsView: View {
             .padding(.vertical, 7)
             .background(accent)
             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .stroke(accent.opacity(0.35), lineWidth: 1)
+        )
+    }
+
+    private var screenRecordingNotice: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(ScreenCapturePermission.explanation)
+                .font(.system(size: 11.5))
+                .foregroundColor(.white.opacity(0.7))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button("Grant Screen Recording Access") {
+                appState.screenCapturePermission.requestAccess()
+            }
+            .buttonStyle(.plain)
+            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+            .foregroundColor(.black)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(accent)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+
+            Text("After granting, quit NEXE from the menu bar and reopen it — macOS only applies this permission to a freshly launched process.")
+                .font(.system(size: 9.5))
+                .foregroundColor(.white.opacity(0.4))
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(12)
         .background(

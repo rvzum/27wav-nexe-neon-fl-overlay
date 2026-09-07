@@ -18,6 +18,7 @@ final class AppState: ObservableObject {
     var settings: OverlaySettings
     let detector: FLStudioDetector
     let permissions: PermissionManager
+    let screenCapturePermission: ScreenCapturePermission
     let overlayManager: OverlayManager
 
     private var cancellables = Set<AnyCancellable>()
@@ -26,23 +27,32 @@ final class AppState: ObservableObject {
         let settings = OverlaySettings()
         let detector = FLStudioDetector()
         let permissions = PermissionManager()
+        let screenCapturePermission = ScreenCapturePermission()
 
         self.settings = settings
         self.detector = detector
         self.permissions = permissions
-        self.overlayManager = OverlayManager(detector: detector, permissions: permissions, settings: settings)
+        self.screenCapturePermission = screenCapturePermission
+        self.overlayManager = OverlayManager(
+            detector: detector,
+            permissions: permissions,
+            settings: settings,
+            screenCapturePermission: screenCapturePermission
+        )
 
-        // `settings`, `detector`, `permissions`, and `overlayManager` are
-        // each their own ObservableObject so other parts of the app can
-        // depend on just one of them. SettingsView, however, reads all four
-        // through a single `@EnvironmentObject var appState: AppState`, so
-        // their individual `objectWillChange` events are forwarded up to
-        // AppState's own publisher — otherwise a change to, say,
-        // `settings.isOverlayEnabled` would update the model but never
-        // trigger a re-render of a view only observing `AppState`.
+        // `settings`, `detector`, `permissions`, `screenCapturePermission`,
+        // and `overlayManager` are each their own ObservableObject so other
+        // parts of the app can depend on just one of them. SettingsView,
+        // however, reads all of them through a single
+        // `@EnvironmentObject var appState: AppState`, so their individual
+        // `objectWillChange` events are forwarded up to AppState's own
+        // publisher — otherwise a change to, say, `settings.isOverlayEnabled`
+        // would update the model but never trigger a re-render of a view
+        // only observing `AppState`.
         for publisher in [settings.objectWillChange.eraseToAnyPublisher(),
                           detector.objectWillChange.eraseToAnyPublisher(),
                           permissions.objectWillChange.eraseToAnyPublisher(),
+                          screenCapturePermission.objectWillChange.eraseToAnyPublisher(),
                           overlayManager.objectWillChange.eraseToAnyPublisher()] {
             publisher
                 .receive(on: DispatchQueue.main)
