@@ -95,6 +95,7 @@ final class OverlayManager: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] mode, granted in
                 guard let self else { return }
+                print("[NEXE] OverlayManager: effect mode = \(mode), screen recording granted = \(granted), FL Studio pid = \(self.detector.runningApp?.processIdentifier.description ?? "nil")")
                 if mode == .liveEdgeGlow, granted, let app = self.detector.runningApp {
                     self.captureService.start(pid: app.processIdentifier)
                 } else {

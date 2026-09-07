@@ -20,6 +20,9 @@ final class EdgeGlowController: ObservableObject {
     private var cancellable: AnyCancellable?
     private let processingQueue = DispatchQueue(label: "com.nexe.edgeglow.processing", qos: .userInteractive)
 
+    private var processedCount = 0
+    private var droppedCount = 0
+
     init(capture: WindowCaptureService, settings: OverlaySettings) {
         self.settings = settings
 
@@ -27,12 +30,24 @@ final class EdgeGlowController: ObservableObject {
             .receive(on: processingQueue)
             .compactMap { [weak self] image -> CGImage? in
                 guard let self, let image else { return nil }
-                return EdgeGlowRenderer.render(
+                let result = EdgeGlowRenderer.render(
                     image,
                     theme: self.settings.theme,
                     sensitivity: self.settings.edgeSensitivity / 100.0,
                     intensity: self.settings.normalizedGlowIntensity
                 )
+                if result == nil {
+                    self.droppedCount += 1
+                    if self.droppedCount == 1 || self.droppedCount % 60 == 0 {
+                        print("[NEXE] EdgeGlowController: EdgeGlowRenderer.render returned nil (drop #\(self.droppedCount))")
+                    }
+                } else {
+                    self.processedCount += 1
+                    if self.processedCount == 1 || self.processedCount % 120 == 0 {
+                        print("[NEXE] EdgeGlowController: processed frame #\(self.processedCount)")
+                    }
+                }
+                return result
             }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] cgImage in

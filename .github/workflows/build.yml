@@ -21,16 +21,22 @@ jobs:
       - name: Show available Xcode versions
         run: xcodebuild -showsdks
 
-      - name: Build (unsigned — fine for running on your own Mac)
+      - name: Build (ad-hoc signed — no Apple Developer account needed, but a
+              real local signature, which ScreenCaptureKit's screen-capture
+              daemon requires before it will hand a process any frames — a
+              fully unsigned binary can silently receive zero frames even
+              after Screen Recording access is granted)
         run: |
           xcodebuild \
             -project NEXENeonOverlay.xcodeproj \
             -scheme NEXENeonOverlay \
             -configuration Release \
             -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_ALLOWED=YES \
+            DEVELOPMENT_TEAM="" \
             build
 
       - name: Zip the built .app

@@ -50,9 +50,13 @@ final class WindowCaptureService: NSObject, ObservableObject {
         latestFrame = nil
     }
 
+    private var framesReceived = 0
+
     private func beginCapture(pid: pid_t) {
         stop()
         currentPID = pid
+        framesReceived = 0
+        print("[NEXE] WindowCaptureService: starting capture for pid \(pid)")
 
         Task { [weak self] in
             guard let self else { return }
@@ -61,16 +65,15 @@ final class WindowCaptureService: NSObject, ObservableObject {
                 guard self.currentPID == pid else { return }
 
                 let candidates = content.windows.filter { $0.owningApplication?.processID == pid }
+                print("[NEXE] WindowCaptureService: found \(candidates.count) window(s) owned by pid \(pid) out of \(content.windows.count) total shareable windows")
                 guard let scWindow = candidates.max(by: { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }) else {
+                    print("[NEXE] WindowCaptureService: no matching SCWindow for pid \(pid) — is Screen Recording access actually granted?")
                     return
                 }
 
                 self.beginStream(for: scWindow, pid: pid)
             } catch {
-                // Screen Recording permission likely not granted yet, or FL
-                // Studio currently has no capturable window. The Settings UI
-                // surfaces permission state separately (ScreenCapturePermission);
-                // silently skip this attempt rather than retrying aggressively.
+                print("[NEXE] WindowCaptureService: SCShareableContent fetch failed — \(error)")
             }
         }
     }
@@ -94,6 +97,7 @@ final class WindowCaptureService: NSObject, ObservableObject {
         do {
             try newStream.addStreamOutput(self, type: .screen, sampleHandlerQueue: outputQueue)
         } catch {
+            print("[NEXE] WindowCaptureService: addStreamOutput failed — \(error)")
             return
         }
 
@@ -103,7 +107,9 @@ final class WindowCaptureService: NSObject, ObservableObject {
             guard let self else { return }
             do {
                 try await newStream.startCapture()
+                print("[NEXE] WindowCaptureService: startCapture() succeeded, waiting for frames…")
             } catch {
+                print("[NEXE] WindowCaptureService: startCapture() failed — \(error)")
                 if self.stream === newStream {
                     self.stream = nil
                 }
@@ -119,7 +125,12 @@ extension WindowCaptureService: SCStreamOutput {
 
         let image = CIImage(cvPixelBuffer: pixelBuffer)
         DispatchQueue.main.async { [weak self] in
-            self?.latestFrame = image
+            guard let self else { return }
+            self.latestFrame = image
+            self.framesReceived += 1
+            if self.framesReceived == 1 || self.framesReceived % 120 == 0 {
+                print("[NEXE] WindowCaptureService: received frame #\(self.framesReceived), size \(image.extent.width)x\(image.extent.height)")
+            }
         }
     }
 }
