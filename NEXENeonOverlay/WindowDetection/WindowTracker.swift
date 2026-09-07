@@ -2,15 +2,27 @@
 //  WindowTracker.swift
 //  NEXENeonOverlay
 //
-//  Follows a single external application's frontmost window using the
-//  public macOS Accessibility API (AXUIElement / AXObserver). This is the
-//  officially supported way for one app to read another app's window frame
-//  without touching its process, memory, or files in any way.
+//  Follows *every* window a target application currently has open — its
+//  main window, plus every undocked panel (for FL Studio: Playlist, Piano
+//  Roll, Mixer, Channel Rack, Browser, and any other window it happens to
+//  own) — using only the public macOS Accessibility API (AXUIElement /
+//  AXObserver). This is the officially supported way for one app to read
+//  another app's window frames without touching its process, memory, or
+//  files in any way, and — unlike screen capture — it needs no Screen
+//  Recording permission at all: window *geometry* (position/size) is public
+//  Accessibility data, not pixel content.
+//
+//  Each FL Studio window is a real, separate NSWindow on macOS the moment
+//  it's undocked, so tracking "every AX window this app owns" is exactly
+//  the same thing as "every frame/section the user sees as its own panel" —
+//  NEXE draws one independent neon border per tracked window, so moving,
+//  resizing, opening, or closing any one of them updates only that
+//  window's border.
 //
 //  Requires the user to have granted NEXE Accessibility access (see
 //  PermissionManager). Until that is granted, AXUIElement calls simply fail
-//  gracefully (empty/nil results) — WindowTracker never crashes or retries
-//  aggressively when untrusted, it just reports "not available".
+//  gracefully (empty results) — WindowTracker never crashes or retries
+//  aggressively when untrusted, it just reports "nothing tracked".
 //
 
 import AppKit
@@ -27,89 +39,96 @@ struct TrackedFrame: Equatable {
     var rect: CGRect { CGRect(origin: origin, size: size) }
 }
 
+/// Wraps an `AXUIElement` window handle so it can be used as a stable,
+/// correctly-comparable dictionary key across AX notification callbacks.
+/// `AXUIElementRef` is a `CFType`; comparing two of them with `CFEqual` (and
+/// hashing with `CFHash`) — rather than Swift's default identity semantics —
+/// is the documented, public way to tell whether two `AXUIElement` values
+/// refer to the same accessibility object.
+struct AXWindowID: Hashable {
+    let element: AXUIElement
+
+    static func == (lhs: AXWindowID, rhs: AXWindowID) -> Bool {
+        CFEqual(lhs.element, rhs.element)
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(CFHash(element))
+    }
+}
+
+/// One target-app window NEXE is currently following.
+struct TrackedWindow: Identifiable {
+    let id: AXWindowID
+    var frame: TrackedFrame
+    var isFullScreen: Bool
+}
+
 final class WindowTracker: ObservableObject {
 
-    @Published private(set) var frame: TrackedFrame?
-    /// True while the tracked window exists, is not miniaturized, and is
-    /// not in full screen (full screen is handled as a graceful fallback —
-    /// see AppState / OverlayManager).
-    @Published private(set) var isWindowVisible: Bool = false
-    @Published private(set) var isFullScreen: Bool = false
+    /// Every eligible window the target app currently has open and visible
+    /// (not miniaturized), keyed by a stable per-window identity. NEXE
+    /// creates one overlay window per entry here — see OverlayManager.
+    @Published private(set) var windows: [AXWindowID: TrackedWindow] = [:]
 
-    private var axApp: AXUIElement?
-    private var axWindow: AXUIElement?
-    private var observer: AXObserver?
     private let pid: pid_t
+    private var axApp: AXUIElement?
+    private var observer: AXObserver?
+    /// Keeps every currently-tracked AXUIElement strongly referenced. The
+    /// notifications we register are tied to these specific element
+    /// instances, so they must stay alive for as long as we're observing
+    /// them.
+    private var trackedElements: [AXWindowID: AXUIElement] = [:]
+
+    private static let perWindowNotifications: [CFString] = [
+        kAXMovedNotification as CFString,
+        kAXResizedNotification as CFString,
+        kAXUIElementDestroyedNotification as CFString,
+        kAXWindowMiniaturizedNotification as CFString,
+        kAXWindowDeminiaturizedNotification as CFString,
+    ]
+
+    /// FL Studio occasionally owns small helper windows (tooltips, color
+    /// swatches, popovers) that aren't a "section" anyone wants outlined —
+    /// this floor keeps NEXE glowing only substantial, real panels.
+    private static let minimumTrackedDimension: CGFloat = 80
 
     init(pid: pid_t) {
         self.pid = pid
         self.axApp = AXUIElementCreateApplication(pid)
-        attachToMainWindow()
+        attach()
     }
 
     deinit {
-        teardownObserver()
+        teardown()
     }
 
     /// Call after Accessibility permission is granted (or on first attempt)
-    /// to (re)acquire the app's main window and start observing it.
-    func attachToMainWindow() {
-        teardownObserver()
+    /// to (re)acquire every window the app currently owns and start
+    /// observing all of them.
+    func attach() {
+        teardown()
 
         guard AXIsProcessTrusted(), let axApp else {
-            frame = nil
-            isWindowVisible = false
+            windows = [:]
             return
         }
 
-        guard let window = Self.copyMainWindow(of: axApp) else {
-            frame = nil
-            isWindowVisible = false
-            return
+        setupAppObserver(axApp)
+        for window in Self.copyWindows(of: axApp) {
+            register(window)
         }
-
-        axWindow = window
-        refreshFrame()
-        isWindowVisible = true
-        setupObserver(for: window)
     }
 
-    // MARK: - Frame reading
+    // MARK: - Observer lifecycle
 
-    private func refreshFrame() {
-        guard let axWindow else { return }
-
-        guard let axPosition = Self.copyAttribute(axWindow, kAXPositionAttribute),
-              let axSize = Self.copyAttribute(axWindow, kAXSizeAttribute) else {
-            return
-        }
-
-        var point = CGPoint.zero
-        var size = CGSize.zero
-        guard AXValueGetValue(axPosition as! AXValue, .cgPoint, &point),
-              AXValueGetValue(axSize as! AXValue, .cgSize, &size) else {
-            return
-        }
-
-        let cocoaOrigin = Self.convertAXPointToCocoa(topLeft: point, size: size)
-        let newFrame = TrackedFrame(origin: cocoaOrigin, size: size)
-
-        if newFrame != frame {
-            frame = newFrame
-        }
-
-        isFullScreen = Self.windowIsFullScreen(axWindow)
-    }
-
-    // MARK: - AXObserver (event-driven, no polling of geometry)
-
-    private func setupObserver(for window: AXUIElement) {
+    private func setupAppObserver(_ axApp: AXUIElement) {
         var newObserver: AXObserver?
-        let callback: AXObserverCallback = { _, _, notificationName, refcon in
+        let callback: AXObserverCallback = { _, element, notificationName, refcon in
             guard let refcon else { return }
             let tracker = Unmanaged<WindowTracker>.fromOpaque(refcon).takeUnretainedValue()
             DispatchQueue.main.async {
-                tracker.handleNotification(notificationName as String)
+                tracker.handleNotification(notificationName as String, element: element)
             }
         }
 
@@ -118,17 +137,11 @@ final class WindowTracker: ObservableObject {
         }
 
         let refcon = Unmanaged.passUnretained(self).toOpaque()
-        let notifications: [CFString] = [
-            kAXMovedNotification as CFString,
-            kAXResizedNotification as CFString,
-            kAXUIElementDestroyedNotification as CFString,
-            kAXWindowMiniaturizedNotification as CFString,
-            kAXWindowDeminiaturizedNotification as CFString,
-        ]
-
-        for notification in notifications {
-            AXObserverAddNotification(createdObserver, window, notification, refcon)
-        }
+        // A single AXObserver instance covers the whole target process;
+        // this app-level notification is how NEXE learns about new windows
+        // (a newly opened Piano Roll, an undocked Mixer, etc.) as they
+        // appear, without polling.
+        AXObserverAddNotification(createdObserver, axApp, kAXWindowCreatedNotification as CFString, refcon)
 
         CFRunLoopAddSource(
             RunLoop.current.getCFRunLoop(),
@@ -139,7 +152,7 @@ final class WindowTracker: ObservableObject {
         observer = createdObserver
     }
 
-    private func teardownObserver() {
+    private func teardown() {
         if let observer {
             CFRunLoopRemoveSource(
                 RunLoop.current.getCFRunLoop(),
@@ -148,44 +161,68 @@ final class WindowTracker: ObservableObject {
             )
         }
         observer = nil
-        axWindow = nil
+        trackedElements.removeAll()
+        windows.removeAll()
     }
 
-    private func handleNotification(_ name: String) {
+    // MARK: - Per-window registration
+
+    private func register(_ window: AXUIElement) {
+        let id = AXWindowID(element: window)
+        guard trackedElements[id] == nil else { return }
+        guard let frame = Self.readFrame(window), Self.isEligible(frame) else { return }
+
+        trackedElements[id] = window
+        windows[id] = TrackedWindow(id: id, frame: frame, isFullScreen: Self.windowIsFullScreen(window))
+
+        if let observer {
+            let refcon = Unmanaged.passUnretained(self).toOpaque()
+            for notification in Self.perWindowNotifications {
+                AXObserverAddNotification(observer, window, notification, refcon)
+            }
+        }
+    }
+
+    private func unregister(_ id: AXWindowID) {
+        trackedElements.removeValue(forKey: id)
+        windows.removeValue(forKey: id)
+    }
+
+    private func refreshFrame(for id: AXWindowID, element: AXUIElement) {
+        guard trackedElements[id] != nil, let frame = Self.readFrame(element) else { return }
+        let isFullScreen = Self.windowIsFullScreen(element)
+        let updated = TrackedWindow(id: id, frame: frame, isFullScreen: isFullScreen)
+        if windows[id]?.frame != updated.frame || windows[id]?.isFullScreen != updated.isFullScreen {
+            windows[id] = updated
+        }
+    }
+
+    private func handleNotification(_ name: String, element: AXUIElement) {
+        let id = AXWindowID(element: element)
         switch name {
+        case kAXWindowCreatedNotification:
+            register(element)
         case kAXUIElementDestroyedNotification:
-            frame = nil
-            isWindowVisible = false
-            teardownObserver()
-            // The window (e.g. a document window) was closed; try to
-            // reattach to whatever main window remains, if any.
-            attachToMainWindow()
+            unregister(id)
         case kAXWindowMiniaturizedNotification:
-            isWindowVisible = false
+            // Treat a miniaturized window the same as a closed one for
+            // overlay purposes — its overlay disappears until it's restored.
+            unregister(id)
         case kAXWindowDeminiaturizedNotification:
-            isWindowVisible = true
-            refreshFrame()
+            register(element)
         default:
-            refreshFrame()
+            refreshFrame(for: id, element: element)
         }
     }
 
     // MARK: - AX helpers
 
-    private static func copyMainWindow(of app: AXUIElement) -> AXUIElement? {
-        if let value = copyAttribute(app, kAXMainWindowAttribute) {
-            return (value as! AXUIElement)
+    private static func copyWindows(of app: AXUIElement) -> [AXUIElement] {
+        guard let value = copyAttribute(app, kAXWindowsAttribute),
+              let windows = value as? [AXUIElement] else {
+            return []
         }
-        if let value = copyAttribute(app, kAXFocusedWindowAttribute) {
-            return (value as! AXUIElement)
-        }
-        // Fall back to the first entry in the window list.
-        if let windowsValue = copyAttribute(app, kAXWindowsAttribute),
-           let windows = windowsValue as? [AXUIElement],
-           let first = windows.first {
-            return first
-        }
-        return nil
+        return windows
     }
 
     private static func copyAttribute(_ element: AXUIElement, _ attribute: String) -> AnyObject? {
@@ -195,27 +232,37 @@ final class WindowTracker: ObservableObject {
         return value
     }
 
+    private static func readFrame(_ window: AXUIElement) -> TrackedFrame? {
+        guard let axPosition = copyAttribute(window, kAXPositionAttribute),
+              let axSize = copyAttribute(window, kAXSizeAttribute) else {
+            return nil
+        }
+
+        var point = CGPoint.zero
+        var size = CGSize.zero
+        guard AXValueGetValue(axPosition as! AXValue, .cgPoint, &point),
+              AXValueGetValue(axSize as! AXValue, .cgSize, &size) else {
+            return nil
+        }
+
+        let cocoaOrigin = convertAXPointToCocoa(topLeft: point, size: size)
+        return TrackedFrame(origin: cocoaOrigin, size: size)
+    }
+
+    private static func isEligible(_ frame: TrackedFrame) -> Bool {
+        frame.size.width >= minimumTrackedDimension && frame.size.height >= minimumTrackedDimension
+    }
+
     private static func windowIsFullScreen(_ window: AXUIElement) -> Bool {
         // There is no direct public AX attribute for "is full screen".
         // The closest stable, official signal is comparing the window's
         // frame against the screen's frame it is on; if they match (within
         // a small tolerance) we treat it as full screen for the purpose of
-        // deciding whether to draw the overlay (see OverlayManager).
-        guard let axPosition = copyAttribute(window, kAXPositionAttribute),
-              let axSize = copyAttribute(window, kAXSizeAttribute) else {
-            return false
-        }
-        var point = CGPoint.zero
-        var size = CGSize.zero
-        guard AXValueGetValue(axPosition as! AXValue, .cgPoint, &point),
-              AXValueGetValue(axSize as! AXValue, .cgSize, &size) else {
-            return false
-        }
-        let cocoaOrigin = convertAXPointToCocoa(topLeft: point, size: size)
-        let windowRect = CGRect(origin: cocoaOrigin, size: size)
-
+        // deciding whether to draw that window's overlay (see
+        // OverlayManager).
+        guard let frame = readFrame(window) else { return false }
         for screen in NSScreen.screens {
-            if screen.frame.equalTo(windowRect) {
+            if screen.frame.equalTo(frame.rect) {
                 return true
             }
         }
