@@ -19,20 +19,14 @@
 		NEXE0000000000000100020 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010001F /* OverlayManager.swift */; };
 		NEXE0000000000000100022 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100021 /* OverlayView.swift */; };
 		NEXE0000000000000100024 /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100023 /* OverlayWindow.swift */; };
-		NEXE0000000000000100026 /* EdgeGlowLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100025 /* EdgeGlowLayerView.swift */; };
-		NEXE0000000000000100028 /* EdgeGlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100027 /* EdgeGlowController.swift */; };
 		NEXE000000000000010002A /* AmbientLightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100029 /* AmbientLightView.swift */; };
 		NEXE000000000000010002C /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010002B /* Animations.swift */; };
 		NEXE000000000000010002E /* GlowEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010002D /* GlowEffect.swift */; };
 		NEXE0000000000000100030 /* NeonFrameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010002F /* NeonFrameView.swift */; };
 		NEXE0000000000000100032 /* ParticleSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100031 /* ParticleSystem.swift */; };
-		NEXE0000000000000100034 /* EdgeGlowRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100033 /* EdgeGlowRenderer.swift */; };
 		NEXE0000000000000100036 /* OverlaySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100035 /* OverlaySettings.swift */; };
 		NEXE0000000000000100038 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100037 /* Theme.swift */; };
-		NEXE000000000000010003A /* EffectMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100039 /* EffectMode.swift */; };
 		NEXE000000000000010003C /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010003B /* PermissionManager.swift */; };
-		NEXE000000000000010003E /* ScreenCapturePermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010003D /* ScreenCapturePermission.swift */; };
-		NEXE0000000000000100040 /* WindowCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010003F /* WindowCaptureService.swift */; };
 		NEXE0000000000000100044 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100043 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -49,20 +43,14 @@
 		NEXE000000000000010001F /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
 		NEXE0000000000000100021 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		NEXE0000000000000100023 /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindow.swift; sourceTree = "<group>"; };
-		NEXE0000000000000100025 /* EdgeGlowLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeGlowLayerView.swift; sourceTree = "<group>"; };
-		NEXE0000000000000100027 /* EdgeGlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeGlowController.swift; sourceTree = "<group>"; };
 		NEXE0000000000000100029 /* AmbientLightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientLightView.swift; sourceTree = "<group>"; };
 		NEXE000000000000010002B /* Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
 		NEXE000000000000010002D /* GlowEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowEffect.swift; sourceTree = "<group>"; };
 		NEXE000000000000010002F /* NeonFrameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeonFrameView.swift; sourceTree = "<group>"; };
 		NEXE0000000000000100031 /* ParticleSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleSystem.swift; sourceTree = "<group>"; };
-		NEXE0000000000000100033 /* EdgeGlowRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeGlowRenderer.swift; sourceTree = "<group>"; };
 		NEXE0000000000000100035 /* OverlaySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlaySettings.swift; sourceTree = "<group>"; };
 		NEXE0000000000000100037 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		NEXE0000000000000100039 /* EffectMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectMode.swift; sourceTree = "<group>"; };
 		NEXE000000000000010003B /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
-		NEXE000000000000010003D /* ScreenCapturePermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapturePermission.swift; sourceTree = "<group>"; };
-		NEXE000000000000010003F /* WindowCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCaptureService.swift; sourceTree = "<group>"; };
 		NEXE0000000000000100041 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		NEXE0000000000000100042 /* NEXENeonOverlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NEXENeonOverlay.entitlements; sourceTree = "<group>"; };
 		NEXE0000000000000100043 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -147,8 +135,6 @@
 				NEXE000000000000010001F /* OverlayManager.swift */,
 				NEXE0000000000000100021 /* OverlayView.swift */,
 				NEXE0000000000000100023 /* OverlayWindow.swift */,
-				NEXE0000000000000100025 /* EdgeGlowLayerView.swift */,
-				NEXE0000000000000100027 /* EdgeGlowController.swift */,
 			);
 			path = Overlay;
 			sourceTree = "<group>";
@@ -161,7 +147,6 @@
 				NEXE000000000000010002D /* GlowEffect.swift */,
 				NEXE000000000000010002F /* NeonFrameView.swift */,
 				NEXE0000000000000100031 /* ParticleSystem.swift */,
-				NEXE0000000000000100033 /* EdgeGlowRenderer.swift */,
 			);
 			path = Effects;
 			sourceTree = "<group>";
@@ -171,7 +156,6 @@
 			children = (
 				NEXE0000000000000100035 /* OverlaySettings.swift */,
 				NEXE0000000000000100037 /* Theme.swift */,
-				NEXE0000000000000100039 /* EffectMode.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -180,8 +164,6 @@
 			isa = PBXGroup;
 			children = (
 				NEXE000000000000010003B /* PermissionManager.swift */,
-				NEXE000000000000010003D /* ScreenCapturePermission.swift */,
-				NEXE000000000000010003F /* WindowCaptureService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -284,20 +266,14 @@
 				NEXE0000000000000100020 /* OverlayManager.swift in Sources */,
 				NEXE0000000000000100022 /* OverlayView.swift in Sources */,
 				NEXE0000000000000100024 /* OverlayWindow.swift in Sources */,
-				NEXE0000000000000100026 /* EdgeGlowLayerView.swift in Sources */,
-				NEXE0000000000000100028 /* EdgeGlowController.swift in Sources */,
 				NEXE000000000000010002A /* AmbientLightView.swift in Sources */,
 				NEXE000000000000010002C /* Animations.swift in Sources */,
 				NEXE000000000000010002E /* GlowEffect.swift in Sources */,
 				NEXE0000000000000100030 /* NeonFrameView.swift in Sources */,
 				NEXE0000000000000100032 /* ParticleSystem.swift in Sources */,
-				NEXE0000000000000100034 /* EdgeGlowRenderer.swift in Sources */,
 				NEXE0000000000000100036 /* OverlaySettings.swift in Sources */,
 				NEXE0000000000000100038 /* Theme.swift in Sources */,
-				NEXE000000000000010003A /* EffectMode.swift in Sources */,
 				NEXE000000000000010003C /* PermissionManager.swift in Sources */,
-				NEXE000000000000010003E /* ScreenCapturePermission.swift in Sources */,
-				NEXE0000000000000100040 /* WindowCaptureService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
