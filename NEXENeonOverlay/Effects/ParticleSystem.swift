@@ -71,15 +71,16 @@ final class ParticleHostView: NSView {
         emitterLayer.renderMode = .additive
 
         // Spec: max 10-30 particles on screen at once, slow, subtle,
-        // low-opacity. birthRate * lifetime ≈ steady-state particle count.
-        let steadyStateCount: Float = 18
-        let lifetime: Float = 9.0
-        let birthRate = steadyStateCount / lifetime
-
+        // low-opacity. birthRate * lifetime ≈ steady-state particle count
+        // (18 / 9 ≈ 2 born per second, ~9s lifetime -> ~18 on screen).
+        // Written as plain literal expressions (no named Float/CGFloat
+        // constant) so each one adopts whatever concrete numeric type
+        // CAEmitterCell's property actually is, rather than risking a
+        // Float/CGFloat mismatch from an explicitly-typed intermediate.
         let cell = CAEmitterCell()
-        cell.birthRate = birthRate
-        cell.lifetime = lifetime
-        cell.lifetimeRange = lifetime * 0.4
+        cell.birthRate = 18.0 / 9.0
+        cell.lifetime = 9.0
+        cell.lifetimeRange = 9.0 * 0.4
         cell.velocity = 6
         cell.velocityRange = 3
         cell.yAcceleration = -2 // drift slowly upward
@@ -87,9 +88,9 @@ final class ParticleHostView: NSView {
         cell.emissionRange = .pi / 10
         cell.scale = 0.05
         cell.scaleRange = 0.03
-        cell.alphaSpeed = -1.0 / lifetime // fade out over its lifetime
+        cell.alphaSpeed = -1.0 / 9.0 // fade out over its lifetime
         cell.contents = Self.particleImage(color: color)
-        cell.color = color.withAlphaComponent(0.5 * intensity).cgColor
+        cell.color = color.withAlphaComponent(CGFloat(0.5 * intensity)).cgColor
 
         emitterLayer.emitterCells = [cell]
     }

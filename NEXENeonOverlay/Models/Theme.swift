@@ -39,7 +39,7 @@ struct ThemeColor: Codable, Equatable, Hashable {
     }
 
     var nsColor: NSColor {
-        NSColor(red: red, green: green, blue: blue, alpha: alpha)
+        NSColor(red: CGFloat(red), green: CGFloat(green), blue: CGFloat(blue), alpha: CGFloat(alpha))
     }
 
     func withAlpha(_ newAlpha: Double) -> ThemeColor {

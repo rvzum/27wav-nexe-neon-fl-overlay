@@ -21,9 +21,9 @@ struct GlowEffect: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .shadow(color: color.opacity(0.9 * intensity), radius: 2 + 3 * intensity)
-            .shadow(color: color.opacity(0.55 * intensity), radius: 6 + 8 * intensity)
-            .shadow(color: color.opacity(0.3 * intensity), radius: 14 + 18 * intensity)
+            .shadow(color: color.opacity(0.9 * intensity), radius: CGFloat(2 + 3 * intensity))
+            .shadow(color: color.opacity(0.55 * intensity), radius: CGFloat(6 + 8 * intensity))
+            .shadow(color: color.opacity(0.3 * intensity), radius: CGFloat(14 + 18 * intensity))
     }
 }
 

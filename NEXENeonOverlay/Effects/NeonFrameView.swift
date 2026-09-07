@@ -29,21 +29,21 @@ struct NeonFrameView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let rect = CGRect(origin: .zero, size: proxy.size).insetBy(dx: thickness / 2, dy: thickness / 2)
+            let rect = CGRect(origin: .zero, size: proxy.size).insetBy(dx: CGFloat(thickness / 2), dy: CGFloat(thickness / 2))
             let breathIntensity = intensity * (1.0 - animationConfig.pulseDepth / 2 + (breathing ? animationConfig.pulseDepth / 2 : 0))
 
             ZStack {
                 // Base neon line.
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .path(in: rect)
-                    .stroke(theme.primaryColor.color.opacity(0.75), lineWidth: thickness)
+                    .stroke(theme.primaryColor.color.opacity(0.75), lineWidth: CGFloat(thickness))
                     .nexeGlow(color: theme.glowColor.color, intensity: breathIntensity)
 
                 // Soft secondary tint for a two-tone "premium hardware" edge
                 // rather than a single flat neon line.
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .path(in: rect)
-                    .stroke(theme.secondaryColor.color.opacity(0.22), lineWidth: max(1, thickness * 0.4))
+                    .stroke(theme.secondaryColor.color.opacity(0.22), lineWidth: CGFloat(max(1, thickness * 0.4)))
                     .blendMode(.plusLighter)
 
                 // Traveling highlight: a narrow bright band in an angular
@@ -61,9 +61,9 @@ struct NeonFrameView: View {
                             center: .center,
                             angle: .degrees(travelAngle)
                         ),
-                        lineWidth: thickness * 1.6
+                        lineWidth: CGFloat(thickness * 1.6)
                     )
-                    .blur(radius: thickness * 0.5)
+                    .blur(radius: CGFloat(thickness * 0.5))
             }
         }
         .onAppear(perform: startAnimating)

@@ -92,7 +92,7 @@ struct CornerAccentsView: View {
             Circle()
                 .fill(theme.glowColor.color)
                 .frame(width: 3, height: 3)
-                .shadow(color: theme.glowColor.color, radius: 4 * intensity)
+                .shadow(color: theme.glowColor.color, radius: CGFloat(4 * intensity))
                 .opacity(dotOpacity)
         )
         .position(point)

@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Status item (menu bar)
 
     private func setupStatusItem() {
-        let item = NSStatusBar.system.statusItem(withLength: NSStatusBar.squareLength)
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = item.button {
             button.image = NSImage(systemSymbolName: "hexagon.fill", accessibilityDescription: "NEXE")
             button.image?.isTemplate = true
