@@ -1,35 +1,44 @@
 # NEXE Neon FL Overlay
 
-A native macOS companion app that draws a soft, animated neon/cyberpunk frame
-over FL Studio's window — without touching FL Studio itself in any way.
+A native macOS companion app that draws a soft, animated neon/cyberpunk
+border around every one of FL Studio's windows — without touching FL Studio
+itself in any way.
 
-NEXE watches for FL Studio using only public system APIs, follows its window
-(position, size, move, resize) via the public Accessibility API, and paints a
-separate, click-through, borderless window on top of it. Turn NEXE off (or
-quit it) and FL Studio looks and behaves exactly as it always has — nothing
-about FL Studio is ever modified, patched, injected into, or read from disk.
+NEXE watches for FL Studio using only public system APIs, follows every
+window it has open (position, size, move, resize, open, close) via the
+public Accessibility API, and paints a separate, click-through, borderless
+window on top of each one. Turn NEXE off (or quit it) and FL Studio looks
+and behaves exactly as it always has — nothing about FL Studio is ever
+modified, patched, injected into, read from disk, or captured as pixels.
 
 ## What it does
 
 - Detects a running FL Studio process (`NSWorkspace`) and shows a live
   **FL STUDIO ● CONNECTED** / **● WAITING FOR FL STUDIO** status.
-- Locates FL Studio's main window and its frame using the public
-  Accessibility API (`AXUIElement` / `AXObserver`) — no private APIs, no
-  injection, no reverse engineering.
-- Draws a borderless, transparent, **click-through** overlay window that:
-  - traces a thin animated neon frame just inside FL Studio's window edge,
-  - adds a very soft ambient glow pooling in the corners,
-  - adds minimal HUD-style corner accents,
-  - optionally adds a handful of slow, subtle ambient particles (off by
+- Locates **every window FL Studio currently has open** — the main window,
+  plus Playlist, Piano Roll, Mixer, Channel Rack, Browser, and any other
+  panel the moment it's undocked into its own window — using the public
+  Accessibility API (`AXUIElement` / `AXObserver`). No private APIs, no
+  injection, no reverse engineering, and no Screen Recording permission:
+  window geometry is public Accessibility data, not pixel content.
+- Draws one borderless, transparent, **click-through** overlay window per
+  tracked FL Studio window, each independently:
+  - tracing a thin animated neon frame just inside that window's edge,
+  - adding a very soft ambient glow pooling in its corners,
+  - adding minimal HUD-style corner accents,
+  - optionally adding a handful of slow, subtle ambient particles (off by
     default).
-- Follows FL Studio when it moves or resizes, hides automatically when FL
-  Studio quits or is minimized, and re-appears the moment FL Studio is
-  running again — no relaunch of NEXE required.
+- Follows each FL Studio window as it moves or resizes, adds a new border
+  the instant a new window opens (e.g. undocking the Mixer), removes it the
+  instant that window closes or is minimized, and hides automatically when
+  FL Studio quits — no relaunch of NEXE required.
 - Ships five themes (NEXE VOID, CYBER BLUE, SIGNAL RED, ACID, PURPLE CORE)
   plus sliders for glow intensity, animation speed, and frame thickness, and
-  a toggle for the whole overlay and for particles.
+  a toggle for the whole overlay and for particles — applied to every
+  tracked window at once.
 - Lives in the menu bar only (no Dock icon) with a small settings window,
-  **NEXE — Visual Engine**.
+  **NEXE — Visual Engine**, which also shows a live **WINDOWS OUTLINED**
+  count.
 
 ## Why it needs Accessibility permission
 
@@ -181,31 +190,39 @@ Xcode), the sections below cover that instead.
    there. NEXE polls its own trust state every ~1.5s and updates the UI
    automatically once you grant it; no relaunch needed.
 4. Launch FL Studio and open a project. The status flips to
-   **FL STUDIO ● CONNECTED**, and the neon frame appears around FL Studio's
-   window within a moment.
-5. Move and resize the FL Studio window — the overlay should track it
-   immediately (this is event-driven via `AXObserver`, not a polling loop).
-6. Click and drag inside FL Studio, including near the overlay's frame —
-   every click should reach FL Studio normally; the overlay window has
+   **FL STUDIO ● CONNECTED**, and a neon frame appears around FL Studio's
+   main window within a moment.
+5. Undock the Playlist, Piano Roll, Mixer, or Channel Rack into its own
+   window — each one gets its own independent neon border the moment it
+   opens as a separate window, and loses it the moment it's closed or
+   re-docked.
+6. Move and resize any of these windows — each overlay tracks its own
+   window immediately (this is event-driven via `AXObserver`, not a polling
+   loop).
+7. Click and drag inside FL Studio, including near any overlay's frame —
+   every click should reach FL Studio normally; each overlay window has
    `ignoresMouseEvents = true` and its whole SwiftUI content additionally
    sets `.allowsHitTesting(false)` as a second guarantee.
-7. Try each theme, and the Glow Intensity / Animation Speed / Frame
-   Thickness sliders, and toggle Particles on.
-8. Quit FL Studio — the overlay disappears; NEXE keeps running and waiting.
-9. Toggle **ENABLE VISUAL OVERLAY** off/on and confirm the frame
-   hides/reappears without needing to relaunch anything.
+8. Try each theme, and the Glow Intensity / Animation Speed / Frame
+   Thickness sliders, and toggle Particles on — all tracked windows update
+   together.
+9. Quit FL Studio — every overlay disappears; NEXE keeps running and
+   waiting.
+10. Toggle **ENABLE VISUAL OVERLAY** off/on and confirm every frame
+    hides/reappears without needing to relaunch anything.
 
 ### Full screen
 
 FL Studio's own full-screen mode is handled as a **documented fallback**,
 not a guess: there is no public Accessibility attribute that reports
-"this window is full screen," so `WindowTracker` compares the window's frame
-against each `NSScreen`'s frame — when they match, NEXE treats the window as
-full screen and hides the overlay (a small note appears in the settings
-window) rather than drawing a broken or misaligned frame. When FL Studio
-returns to windowed mode, the overlay reappears automatically. This is the
-stable, honest behavior for v1 per the project's own requirement to fail
-gracefully rather than invent an unstable full-screen overlay.
+"this window is full screen," so `WindowTracker` compares each window's
+frame against each `NSScreen`'s frame — when they match, NEXE treats that
+one window as full screen and hides just its overlay (a small note appears
+in the settings window once *every* open FL Studio window is full screen)
+rather than drawing a broken or misaligned frame. When a window returns to
+windowed mode, its overlay reappears automatically. This is the stable,
+honest behavior per the project's own requirement to fail gracefully rather
+than invent an unstable full-screen overlay.
 
 ## Architecture
 
@@ -220,11 +237,11 @@ NEXENeonOverlay/
     Controls/                  – small reusable controls (slider, toggle, status badge)
   WindowDetection/
     FLStudioDetector.swift     – finds the running FL Studio process (NSWorkspace)
-    WindowTracker.swift        – follows its window frame (AXUIElement / AXObserver)
+    WindowTracker.swift        – follows *every* one of its window frames (AXUIElement / AXObserver)
   Overlay/
     OverlayWindow.swift        – borderless, transparent, click-through NSWindow
-    OverlayManager.swift       – owns the overlay window's lifecycle
-    OverlayView.swift          – SwiftUI composition of all the visual effects
+    OverlayManager.swift       – owns one overlay window's lifecycle per tracked FL Studio window
+    OverlayView.swift          – SwiftUI composition of all the visual effects, one instance per window
   Effects/
     NeonFrameView.swift        – the animated glowing border
     GlowEffect.swift           – reusable layered-bloom view modifier
@@ -242,7 +259,8 @@ NEXENeonOverlay/
 
 Everything reads from a single `OverlaySettings` instance, so the effect
 views never talk to each other directly — `OverlayManager` is the only place
-that creates, moves, shows, or hides the actual overlay window.
+that creates, moves, shows, or hides any overlay window, and it keeps one
+independent overlay window per FL Studio window `WindowTracker` reports.
 
 ### Adding a new theme
 
