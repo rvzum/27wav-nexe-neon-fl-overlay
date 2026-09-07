@@ -3,12 +3,13 @@
 //  NEXENeonOverlay
 //
 //  The conductor: wires FLStudioDetector + WindowTracker + PermissionManager
-//  + OverlaySettings together and owns the single OverlayWindow instance's
-//  lifecycle. This is the only place that creates/destroys/repositions the
-//  overlay window. It also owns the LIVE EDGE GLOW capture pipeline
-//  (WindowCaptureService + EdgeGlowController), starting/stopping it only
-//  when that effect mode is selected and Screen Recording access is
-//  granted, so OUTLINE ONLY mode costs nothing extra.
+//  + OverlaySettings together and owns the lifecycle of one OverlayWindow
+//  per FL Studio window currently on screen. This is the only place that
+//  creates/destroys/repositions overlay windows — every real FL Studio
+//  window (main window, Playlist, Piano Roll, Mixer, Channel Rack, Browser,
+//  any other undocked panel) gets its own independent neon border,
+//  positioned and animated entirely from AXUIElement window geometry. No
+//  screen or pixel content is ever read.
 //
 
 import AppKit
@@ -20,37 +21,34 @@ final class OverlayManager: ObservableObject {
     private let detector: FLStudioDetector
     private let permissions: PermissionManager
     private let settings: OverlaySettings
-    private let screenCapturePermission: ScreenCapturePermission
 
-    private var window: OverlayWindow?
-    private var hostingController: NSHostingController<OverlayView>?
     private var windowTracker: WindowTracker?
-
-    private let captureService = WindowCaptureService()
-    private lazy var edgeGlowController = EdgeGlowController(capture: captureService, settings: settings)
-    private var lastCaptureSize: CGSize?
+    private var overlayWindows: [AXWindowID: OverlayWindowController] = [:]
 
     private var cancellables = Set<AnyCancellable>()
+    private var trackerCancellables = Set<AnyCancellable>()
+
+    /// How many FL Studio windows currently have a neon border — surfaced
+    /// to the UI as a small live status line.
+    @Published private(set) var trackedWindowCount: Int = 0
 
     /// Surfaced to the UI so SettingsView can show a small explanatory note
-    /// when the overlay is intentionally hidden during full screen.
+    /// when every currently-open FL Studio window happens to be full
+    /// screen (so nothing is visibly outlined right now).
     @Published private(set) var isSuspendedForFullScreen: Bool = false
 
     init(
         detector: FLStudioDetector,
         permissions: PermissionManager,
-        settings: OverlaySettings,
-        screenCapturePermission: ScreenCapturePermission
+        settings: OverlaySettings
     ) {
         self.detector = detector
         self.permissions = permissions
         self.settings = settings
-        self.screenCapturePermission = screenCapturePermission
 
         observeDetector()
         observeSettings()
         observePermissions()
-        observeCaptureConditions()
     }
 
     // MARK: - Observation
@@ -81,27 +79,8 @@ final class OverlayManager: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] trusted in
                 guard trusted, let self, let app = self.detector.runningApp else { return }
-                // Permission was just granted — (re)acquire the AX window.
+                // Permission was just granted — (re)acquire every AX window.
                 self.startTracking(pid: app.processIdentifier)
-            }
-            .store(in: &cancellables)
-    }
-
-    /// LIVE EDGE GLOW's capture stream only runs while that mode is selected
-    /// and Screen Recording access has been granted; it stays fully off
-    /// otherwise so OUTLINE ONLY mode costs nothing extra.
-    private func observeCaptureConditions() {
-        Publishers.CombineLatest(settings.$effectMode, screenCapturePermission.$isGranted)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] mode, granted in
-                guard let self else { return }
-                print("[NEXE] OverlayManager: effect mode = \(mode), screen recording granted = \(granted), FL Studio pid = \(self.detector.runningApp?.processIdentifier.description ?? "nil")")
-                if mode == .liveEdgeGlow, granted, let app = self.detector.runningApp {
-                    self.captureService.start(pid: app.processIdentifier)
-                } else {
-                    self.captureService.stop()
-                    self.lastCaptureSize = nil
-                }
             }
             .store(in: &cancellables)
     }
@@ -109,113 +88,113 @@ final class OverlayManager: ObservableObject {
     // MARK: - Tracking lifecycle
 
     private func startTracking(pid: pid_t) {
+        trackerCancellables.removeAll()
+
         let tracker = WindowTracker(pid: pid)
         windowTracker = tracker
 
-        tracker.$frame
+        tracker.$windows
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] frame in
-                self?.handleFrameUpdate(frame)
+            .sink { [weak self] windows in
+                self?.reconcile(windows)
             }
-            .store(in: &cancellables)
-
-        tracker.$isFullScreen
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] isFullScreen in
-                self?.isSuspendedForFullScreen = isFullScreen
-                self?.refreshVisibility()
-            }
-            .store(in: &cancellables)
-
-        tracker.$isWindowVisible
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.refreshVisibility() }
-            .store(in: &cancellables)
+            .store(in: &trackerCancellables)
     }
 
     private func stopTracking() {
+        trackerCancellables.removeAll()
         windowTracker = nil
-        captureService.stop()
-        lastCaptureSize = nil
-        destroyWindow()
+        reconcile([:])
     }
 
-    private func handleFrameUpdate(_ frame: TrackedFrame?) {
-        guard let frame else {
-            destroyWindow()
-            return
+    /// Creates, updates, or destroys one overlay window per tracked FL
+    /// Studio window so every real window independently gets its own live
+    /// neon border, moving and resizing with it.
+    private func reconcile(_ windows: [AXWindowID: TrackedWindow]) {
+        for id in overlayWindows.keys where windows[id] == nil {
+            overlayWindows[id]?.destroy()
+            overlayWindows.removeValue(forKey: id)
         }
 
-        if let window {
-            window.setFrame(frame.rect, display: true)
-        } else {
-            createWindow(frame: frame.rect)
-        }
-
-        updateCaptureIfNeeded(newSize: frame.size)
-        refreshVisibility()
-    }
-
-    /// (Re)starts the LIVE EDGE GLOW capture stream when FL Studio's window
-    /// is resized, since a ScreenCaptureKit stream's configuration is fixed
-    /// at creation time. A small tolerance avoids restarting on sub-pixel
-    /// jitter from ordinary window moves.
-    private func updateCaptureIfNeeded(newSize: CGSize) {
-        guard settings.effectMode == .liveEdgeGlow,
-              screenCapturePermission.isGranted,
-              let app = detector.runningApp else { return }
-
-        if let last = lastCaptureSize {
-            if abs(last.width - newSize.width) > 4 || abs(last.height - newSize.height) > 4 {
-                captureService.restart(pid: app.processIdentifier)
-                lastCaptureSize = newSize
+        for (id, tracked) in windows {
+            if let controller = overlayWindows[id] {
+                controller.update(frame: tracked.frame.rect)
+            } else {
+                overlayWindows[id] = OverlayWindowController(initialFrame: tracked.frame.rect, settings: settings)
             }
-        } else {
-            captureService.start(pid: app.processIdentifier)
-            lastCaptureSize = newSize
         }
+
+        trackedWindowCount = windows.values.filter { !$0.isFullScreen }.count
+        isSuspendedForFullScreen = !windows.isEmpty && windows.values.allSatisfy { $0.isFullScreen }
+
+        applyVisibility(windows)
     }
 
-    // MARK: - Window management
+    /// Re-applies the visibility rule using whatever `WindowTracker` last
+    /// reported. Only safe to call from contexts that are *not* already
+    /// reacting to a fresh `$windows` emission — see `reconcile(_:)`, which
+    /// passes that emission's value straight to `applyVisibility(_:)`
+    /// instead, since `@Published` delivers its new value slightly ahead of
+    /// actually storing it on the object, so re-reading `windowTracker.windows`
+    /// from inside that same emission's handler could still observe the
+    /// previous state.
+    private func refreshVisibility() {
+        applyVisibility(windowTracker?.windows ?? [:])
+    }
 
-    private func createWindow(frame: CGRect) {
-        let overlayWindow = OverlayWindow(initialFrame: frame)
-        let view = OverlayView(settings: settings, edgeGlow: edgeGlowController)
-        let controller = NSHostingController(rootView: view)
-        controller.view.frame = CGRect(origin: .zero, size: frame.size)
+    /// Central visibility rule: each overlay window only shows when FL
+    /// Studio is running, the user has the overlay enabled in Settings, and
+    /// that particular FL Studio window isn't full screen (see
+    /// WindowTracker's full-screen fallback note) — every other tracked
+    /// window keeps showing its own border independently.
+    private func applyVisibility(_ windows: [AXWindowID: TrackedWindow]) {
+        let baseShouldShow = settings.isOverlayEnabled && detector.state.isConnected
+
+        for (id, controller) in overlayWindows {
+            let isFullScreen = windows[id]?.isFullScreen ?? false
+            if baseShouldShow && !isFullScreen {
+                controller.show()
+            } else {
+                controller.hide()
+            }
+        }
+    }
+}
+
+/// Owns one OverlayWindow and its hosted SwiftUI content for exactly one
+/// tracked FL Studio window. Kept private to OverlayManager — nothing else
+/// needs to know an overlay window controller exists.
+private final class OverlayWindowController {
+    private let window: OverlayWindow
+    private let hostingController: NSHostingController<OverlayView>
+
+    init(initialFrame: CGRect, settings: OverlaySettings) {
+        let overlayWindow = OverlayWindow(initialFrame: initialFrame)
+        let controller = NSHostingController(rootView: OverlayView(settings: settings))
+        controller.view.frame = CGRect(origin: .zero, size: initialFrame.size)
         overlayWindow.contentView = controller.view
 
-        window = overlayWindow
-        hostingController = controller
-        refreshVisibility()
+        self.window = overlayWindow
+        self.hostingController = controller
     }
 
-    private func destroyWindow() {
-        window?.orderOut(nil)
-        window = nil
-        hostingController = nil
+    func update(frame: CGRect) {
+        window.setFrame(frame, display: true)
     }
 
-    /// Central visibility rule: the overlay only shows when FL Studio is
-    /// running, its window is on-screen (not miniaturized), it is not in
-    /// full screen (see WindowTracker's full-screen fallback note), and the
-    /// user has the overlay enabled in Settings.
-    private func refreshVisibility() {
-        guard let window else { return }
-
-        let shouldShow = settings.isOverlayEnabled
-            && detector.state.isConnected
-            && (windowTracker?.isWindowVisible ?? false)
-            && !(windowTracker?.isFullScreen ?? false)
-
-        if shouldShow {
-            if !window.isVisible {
-                window.orderFront(nil)
-            }
-        } else {
-            if window.isVisible {
-                window.orderOut(nil)
-            }
+    func show() {
+        if !window.isVisible {
+            window.orderFront(nil)
         }
+    }
+
+    func hide() {
+        if window.isVisible {
+            window.orderOut(nil)
+        }
+    }
+
+    func destroy() {
+        window.orderOut(nil)
     }
 }
