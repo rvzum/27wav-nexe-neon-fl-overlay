@@ -55,6 +55,12 @@ struct AXWindowID: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(CFHash(element))
     }
+
+    /// Short, stable-enough label for console diagnostics only — never used
+    /// for equality/lookup (that's CFEqual/CFHash above).
+    var debugLabel: String {
+        String(format: "0x%x", CFHash(element))
+    }
 }
 
 /// One target-app window NEXE is currently following.
@@ -110,12 +116,15 @@ final class WindowTracker: ObservableObject {
         teardown()
 
         guard AXIsProcessTrusted(), let axApp else {
+            print("[NEXE] WindowTracker: attach() aborted — trusted = \(AXIsProcessTrusted()), axApp = \(axApp != nil)")
             windows = [:]
             return
         }
 
         setupAppObserver(axApp)
-        for window in Self.copyWindows(of: axApp) {
+        let discovered = Self.copyWindows(of: axApp)
+        print("[NEXE] WindowTracker: attach() found \(discovered.count) raw AX window(s) for pid \(pid)")
+        for window in discovered {
             register(window)
         }
     }
@@ -170,8 +179,16 @@ final class WindowTracker: ObservableObject {
     private func register(_ window: AXUIElement) {
         let id = AXWindowID(element: window)
         guard trackedElements[id] == nil else { return }
-        guard let frame = Self.readFrame(window), Self.isEligible(frame) else { return }
+        guard let frame = Self.readFrame(window) else {
+            print("[NEXE] WindowTracker: register(\(id.debugLabel)) — could not read frame, skipping")
+            return
+        }
+        guard Self.isEligible(frame) else {
+            print("[NEXE] WindowTracker: register(\(id.debugLabel)) — frame \(frame.rect) below minimum size, skipping")
+            return
+        }
 
+        print("[NEXE] WindowTracker: register(\(id.debugLabel)) — tracking, frame = \(frame.rect)")
         trackedElements[id] = window
         windows[id] = TrackedWindow(id: id, frame: frame, isFullScreen: Self.windowIsFullScreen(window))
 

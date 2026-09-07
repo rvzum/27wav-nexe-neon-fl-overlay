@@ -58,6 +58,7 @@ final class OverlayManager: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] app in
                 guard let self else { return }
+                print("[NEXE] OverlayManager: FL Studio pid = \(app?.processIdentifier.description ?? "nil"), accessibility trusted = \(self.permissions.isTrusted)")
                 if let app {
                     self.startTracking(pid: app.processIdentifier)
                 } else {
@@ -126,6 +127,11 @@ final class OverlayManager: ObservableObject {
 
         trackedWindowCount = windows.values.filter { !$0.isFullScreen }.count
         isSuspendedForFullScreen = !windows.isEmpty && windows.values.allSatisfy { $0.isFullScreen }
+
+        print("[NEXE] OverlayManager: reconcile — \(windows.count) window(s) tracked, \(trackedWindowCount) outlined, overlayEnabled = \(settings.isOverlayEnabled)")
+        for (id, tracked) in windows {
+            print("[NEXE]   window \(id.debugLabel): frame = \(tracked.frame.rect), fullScreen = \(tracked.isFullScreen)")
+        }
 
         applyVisibility(windows)
     }
