@@ -26,6 +26,10 @@ struct SettingsView: View {
 
                     StatusBadge(state: appState.detector.state)
 
+                    if appState.detector.state.isConnected {
+                        trackedWindowsLine
+                    }
+
                     if !appState.permissions.isTrusted {
                         accessibilityNotice
                     }
@@ -38,16 +42,10 @@ struct SettingsView: View {
 
                     ToggleRow(
                         title: "ENABLE VISUAL OVERLAY",
-                        subtitle: "Draws the neon overlay over FL Studio's window",
+                        subtitle: "Draws a neon border around every FL Studio window",
                         isOn: $appState.settings.isOverlayEnabled,
                         accent: accent
                     )
-
-                    effectModePicker
-
-                    if appState.settings.effectMode == .liveEdgeGlow && !appState.screenCapturePermission.isGranted {
-                        screenRecordingNotice
-                    }
 
                     ThemeSelector(selection: $appState.settings.theme)
 
@@ -65,22 +63,13 @@ struct SettingsView: View {
                         accent: accent
                     )
 
-                    if appState.settings.effectMode == .outlineOnly {
-                        LabeledSlider(
-                            title: "FRAME THICKNESS",
-                            value: $appState.settings.frameThickness,
-                            range: 1...10,
-                            accent: accent,
-                            valueFormatter: { String(format: "%.1f px", $0) }
-                        )
-                    } else {
-                        LabeledSlider(
-                            title: "EDGE SENSITIVITY",
-                            value: $appState.settings.edgeSensitivity,
-                            range: 0...100,
-                            accent: accent
-                        )
-                    }
+                    LabeledSlider(
+                        title: "FRAME THICKNESS",
+                        value: $appState.settings.frameThickness,
+                        range: 1...10,
+                        accent: accent,
+                        valueFormatter: { String(format: "%.1f px", $0) }
+                    )
 
                     ToggleRow(
                         title: "PARTICLES",
@@ -113,30 +102,11 @@ struct SettingsView: View {
         }
     }
 
-    private var effectModePicker: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("EFFECT MODE")
-                .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                .foregroundColor(.white.opacity(0.5))
-                .tracking(1)
-
-            Picker("", selection: $appState.settings.effectMode) {
-                ForEach(EffectMode.allCases) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-
-            Text(
-                appState.settings.effectMode == .liveEdgeGlow
-                    ? "Traces live neon outlines around every button, panel, and pattern grid line FL Studio draws."
-                    : "A single neon frame traced around FL Studio's outer window edge."
-            )
-            .font(.system(size: 9.5))
+    private var trackedWindowsLine: some View {
+        Text("WINDOWS OUTLINED: \(appState.overlayManager.trackedWindowCount)")
+            .font(.system(size: 9.5, weight: .medium, design: .monospaced))
             .foregroundColor(.white.opacity(0.4))
-            .fixedSize(horizontal: false, vertical: true)
-        }
+            .tracking(0.8)
     }
 
     private var accessibilityNotice: some View {
@@ -168,42 +138,8 @@ struct SettingsView: View {
         )
     }
 
-    private var screenRecordingNotice: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(ScreenCapturePermission.explanation)
-                .font(.system(size: 11.5))
-                .foregroundColor(.white.opacity(0.7))
-                .fixedSize(horizontal: false, vertical: true)
-
-            Button("Grant Screen Recording Access") {
-                appState.screenCapturePermission.requestAccess()
-            }
-            .buttonStyle(.plain)
-            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-            .foregroundColor(.black)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(accent)
-            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-
-            Text("After granting, quit NEXE from the menu bar and reopen it — macOS only applies this permission to a freshly launched process.")
-                .font(.system(size: 9.5))
-                .foregroundColor(.white.opacity(0.4))
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(Color.white.opacity(0.04))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .stroke(accent.opacity(0.35), lineWidth: 1)
-        )
-    }
-
     private var fullScreenNotice: some View {
-        Text("FL Studio is in full screen — overlay is paused until it returns to a window.")
+        Text("Every open FL Studio window is currently full screen — overlay is paused until one returns to windowed mode.")
             .font(.system(size: 10.5))
             .foregroundColor(.white.opacity(0.45))
             .fixedSize(horizontal: false, vertical: true)
