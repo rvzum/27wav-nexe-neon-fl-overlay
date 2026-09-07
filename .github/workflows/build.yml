@@ -1,0 +1,46 @@
+name: Build NEXE Neon FL Overlay
+
+# This lets GitHub's own macOS runners compile the app for you, so nothing
+# needs to be installed on your Mac at all (no Xcode, no Command Line
+# Tools). Push this repo to GitHub (or click "Run workflow" below once it's
+# there) and download the finished NEXENeonOverlay.app from the run's
+# "Artifacts" section when it finishes.
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Show available Xcode versions
+        run: xcodebuild -showsdks
+
+      - name: Build (unsigned — fine for running on your own Mac)
+        run: |
+          xcodebuild \
+            -project NEXENeonOverlay.xcodeproj \
+            -scheme NEXENeonOverlay \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Zip the built .app
+        run: |
+          cd build/Build/Products/Release
+          ditto -c -k --sequesterRsrc --keepParent NEXENeonOverlay.app NEXENeonOverlay-app.zip
+
+      - name: Upload the app as a downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEXENeonOverlay-app
+          path: build/Build/Products/Release/NEXENeonOverlay-app.zip
+          retention-days: 30

@@ -1,0 +1,478 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		NEXE000000000000010000E /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010000D /* AppState.swift */; };
+		NEXE0000000000000100010 /* NEXENeonOverlayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010000F /* NEXENeonOverlayApp.swift */; };
+		NEXE0000000000000100012 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100011 /* SettingsView.swift */; };
+		NEXE0000000000000100014 /* ThemeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100013 /* ThemeSelector.swift */; };
+		NEXE0000000000000100016 /* LabeledSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100015 /* LabeledSlider.swift */; };
+		NEXE0000000000000100018 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100017 /* StatusBadge.swift */; };
+		NEXE000000000000010001A /* ToggleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100019 /* ToggleRow.swift */; };
+		NEXE000000000000010001C /* FLStudioDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010001B /* FLStudioDetector.swift */; };
+		NEXE000000000000010001E /* WindowTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010001D /* WindowTracker.swift */; };
+		NEXE0000000000000100020 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010001F /* OverlayManager.swift */; };
+		NEXE0000000000000100022 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100021 /* OverlayView.swift */; };
+		NEXE0000000000000100024 /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100023 /* OverlayWindow.swift */; };
+		NEXE0000000000000100026 /* AmbientLightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100025 /* AmbientLightView.swift */; };
+		NEXE0000000000000100028 /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100027 /* Animations.swift */; };
+		NEXE000000000000010002A /* GlowEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100029 /* GlowEffect.swift */; };
+		NEXE000000000000010002C /* NeonFrameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010002B /* NeonFrameView.swift */; };
+		NEXE000000000000010002E /* ParticleSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010002D /* ParticleSystem.swift */; };
+		NEXE0000000000000100030 /* OverlaySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE000000000000010002F /* OverlaySettings.swift */; };
+		NEXE0000000000000100032 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100031 /* Theme.swift */; };
+		NEXE0000000000000100034 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100033 /* PermissionManager.swift */; };
+		NEXE0000000000000100038 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = NEXE0000000000000100037 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		NEXE000000000000010000D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		NEXE000000000000010000F /* NEXENeonOverlayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NEXENeonOverlayApp.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100011 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100013 /* ThemeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeSelector.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100015 /* LabeledSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabeledSlider.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100017 /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100019 /* ToggleRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleRow.swift; sourceTree = "<group>"; };
+		NEXE000000000000010001B /* FLStudioDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FLStudioDetector.swift; sourceTree = "<group>"; };
+		NEXE000000000000010001D /* WindowTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTracker.swift; sourceTree = "<group>"; };
+		NEXE000000000000010001F /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100021 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100023 /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindow.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100025 /* AmbientLightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientLightView.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100027 /* Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100029 /* GlowEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowEffect.swift; sourceTree = "<group>"; };
+		NEXE000000000000010002B /* NeonFrameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeonFrameView.swift; sourceTree = "<group>"; };
+		NEXE000000000000010002D /* ParticleSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleSystem.swift; sourceTree = "<group>"; };
+		NEXE000000000000010002F /* OverlaySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlaySettings.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100031 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100033 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
+		NEXE0000000000000100035 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		NEXE0000000000000100036 /* NEXENeonOverlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NEXENeonOverlay.entitlements; sourceTree = "<group>"; };
+		NEXE0000000000000100037 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		NEXE0000000000000100039 /* NEXENeonOverlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NEXENeonOverlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		NEXE000000000000010003E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		NEXE0000000000000100001 = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100002 /* NEXENeonOverlay */,
+				NEXE0000000000000100003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100002 /* NEXENeonOverlay */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100004 /* App */,
+				NEXE0000000000000100005 /* UI */,
+				NEXE0000000000000100007 /* WindowDetection */,
+				NEXE0000000000000100008 /* Overlay */,
+				NEXE0000000000000100009 /* Effects */,
+				NEXE000000000000010000A /* Models */,
+				NEXE000000000000010000B /* Services */,
+				NEXE000000000000010000C /* Resources */,
+			);
+			path = NEXENeonOverlay;
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100004 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE000000000000010000D /* AppState.swift */,
+				NEXE000000000000010000F /* NEXENeonOverlayApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100005 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100006 /* Controls */,
+				NEXE0000000000000100011 /* SettingsView.swift */,
+				NEXE0000000000000100013 /* ThemeSelector.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100006 /* Controls */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100015 /* LabeledSlider.swift */,
+				NEXE0000000000000100017 /* StatusBadge.swift */,
+				NEXE0000000000000100019 /* ToggleRow.swift */,
+			);
+			path = Controls;
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100007 /* WindowDetection */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE000000000000010001B /* FLStudioDetector.swift */,
+				NEXE000000000000010001D /* WindowTracker.swift */,
+			);
+			path = WindowDetection;
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100008 /* Overlay */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE000000000000010001F /* OverlayManager.swift */,
+				NEXE0000000000000100021 /* OverlayView.swift */,
+				NEXE0000000000000100023 /* OverlayWindow.swift */,
+			);
+			path = Overlay;
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100009 /* Effects */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100025 /* AmbientLightView.swift */,
+				NEXE0000000000000100027 /* Animations.swift */,
+				NEXE0000000000000100029 /* GlowEffect.swift */,
+				NEXE000000000000010002B /* NeonFrameView.swift */,
+				NEXE000000000000010002D /* ParticleSystem.swift */,
+			);
+			path = Effects;
+			sourceTree = "<group>";
+		};
+		NEXE000000000000010000A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE000000000000010002F /* OverlaySettings.swift */,
+				NEXE0000000000000100031 /* Theme.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		NEXE000000000000010000B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100033 /* PermissionManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		NEXE000000000000010000C /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100035 /* Info.plist */,
+				NEXE0000000000000100036 /* NEXENeonOverlay.entitlements */,
+				NEXE0000000000000100037 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		NEXE0000000000000100003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				NEXE0000000000000100039 /* NEXENeonOverlay.app */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		NEXE000000000000010003B /* NEXENeonOverlay */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = NEXE0000000000000100040 /* Build configuration list for PBXNativeTarget "NEXENeonOverlay" */;
+			buildPhases = (
+				NEXE000000000000010003C /* Sources */,
+				NEXE000000000000010003E /* Frameworks */,
+				NEXE000000000000010003D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NEXENeonOverlay;
+			productName = NEXENeonOverlay;
+			productReference = NEXE0000000000000100039 /* NEXENeonOverlay.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		NEXE000000000000010003A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					NEXE000000000000010003B = {
+						CreatedOnToolsVersion = 15.3;
+					};
+				};
+			};
+			buildConfigurationList = NEXE000000000000010003F /* Build configuration list for PBXProject "NEXENeonOverlay" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = NEXE0000000000000100001;
+			productRefGroup = NEXE0000000000000100003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				NEXE000000000000010003B /* NEXENeonOverlay */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		NEXE000000000000010003D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				NEXE0000000000000100038 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		NEXE000000000000010003C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				NEXE000000000000010000E /* AppState.swift in Sources */,
+				NEXE0000000000000100010 /* NEXENeonOverlayApp.swift in Sources */,
+				NEXE0000000000000100012 /* SettingsView.swift in Sources */,
+				NEXE0000000000000100014 /* ThemeSelector.swift in Sources */,
+				NEXE0000000000000100016 /* LabeledSlider.swift in Sources */,
+				NEXE0000000000000100018 /* StatusBadge.swift in Sources */,
+				NEXE000000000000010001A /* ToggleRow.swift in Sources */,
+				NEXE000000000000010001C /* FLStudioDetector.swift in Sources */,
+				NEXE000000000000010001E /* WindowTracker.swift in Sources */,
+				NEXE0000000000000100020 /* OverlayManager.swift in Sources */,
+				NEXE0000000000000100022 /* OverlayView.swift in Sources */,
+				NEXE0000000000000100024 /* OverlayWindow.swift in Sources */,
+				NEXE0000000000000100026 /* AmbientLightView.swift in Sources */,
+				NEXE0000000000000100028 /* Animations.swift in Sources */,
+				NEXE000000000000010002A /* GlowEffect.swift in Sources */,
+				NEXE000000000000010002C /* NeonFrameView.swift in Sources */,
+				NEXE000000000000010002E /* ParticleSystem.swift in Sources */,
+				NEXE0000000000000100030 /* OverlaySettings.swift in Sources */,
+				NEXE0000000000000100032 /* Theme.swift in Sources */,
+				NEXE0000000000000100034 /* PermissionManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		NEXE0000000000000100041 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		NEXE0000000000000100042 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		NEXE0000000000000100043 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "NEXENeonOverlay/Resources/NEXENeonOverlay.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "NEXENeonOverlay/Resources/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nexe.neonfloverlay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+
+			};
+			name = Debug;
+		};
+		NEXE0000000000000100044 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "NEXENeonOverlay/Resources/NEXENeonOverlay.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "NEXENeonOverlay/Resources/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nexe.neonfloverlay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		NEXE000000000000010003F /* Build configuration list for PBXProject "NEXENeonOverlay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				NEXE0000000000000100041 /* Debug */,
+				NEXE0000000000000100042 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		NEXE0000000000000100040 /* Build configuration list for PBXNativeTarget "NEXENeonOverlay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				NEXE0000000000000100043 /* Debug */,
+				NEXE0000000000000100044 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = NEXE000000000000010003A /* Project object */;
+}

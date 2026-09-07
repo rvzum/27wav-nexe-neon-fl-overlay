@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  App Sandbox intentionally OFF.
+
+	  The public Accessibility API (AXUIElement / AXObserver) that
+	  WindowTracker uses to read *another* application's window frame is
+	  not available to sandboxed apps — the sandbox blocks exactly this
+	  kind of cross-process introspection, even though it is a fully
+	  public, non-private API. Every other capability NEXE needs (drawing
+	  its own overlay window, reading its own settings) works fine
+	  sandboxed or not; the sandbox restriction specifically targets
+	  AXUIElement calls against other processes, which is the one thing
+	  this app fundamentally requires. See README.md for the full
+	  explanation and distribution implications (this app cannot ship
+	  through the Mac App Store as-is; it is Developer-ID / local-run
+	  only, like every other window-following utility of this kind).
+	-->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+</dict>
+</plist>
